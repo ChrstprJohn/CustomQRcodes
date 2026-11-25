@@ -38,7 +38,7 @@ export function useQrPreview(canvas, data, image, mode, format, settings, draft)
         if (!job?.owner.data) return
         const { data, image, mode, format } = job.owner
         try {
-          const geometry = renderQR(canvas.current, data, image, mode, format, job.settings, 720, { compactPhotoPreview: true })
+          const geometry = renderQR(canvas.current, data, image, mode, format, job.settings, 720)
           const readable = !job.draft && await verifyQR(canvas.current, data, mode)
           accept(job, { geometry, readable })
         } catch (error) {

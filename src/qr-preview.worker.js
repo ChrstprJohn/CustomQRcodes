@@ -9,7 +9,7 @@ self.onmessage = async ({ data: { id, data, mode, format, settings, draft, bitma
     image = bitmap
   }
   try {
-    const geometry = renderQR(canvas, data, image, mode, format, settings, 720, { compactPhotoPreview: true })
+    const geometry = renderQR(canvas, data, image, mode, format, settings, 720)
     const readable = !draft && await verifyQR(canvas, data, mode)
     const frame = canvas.transferToImageBitmap()
     self.postMessage({ id, geometry, readable, frame }, [frame])

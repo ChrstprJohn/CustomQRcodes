@@ -53,7 +53,7 @@ function StyleChoices({ art, mode, onChange }) {
     const canvas = document.createElement('canvas')
     const previewImage = image || demoArtwork()
     const previews = qrStyles.map(style => {
-      renderQR(canvas, 'https://example.com', previewImage, style, 'Card', defaults, 192, { compactPhotoPreview: true })
+      renderQR(canvas, 'https://example.com', previewImage, style, 'Card', defaults, 192)
       return [style, canvas.toDataURL()]
     })
     setThumbnails(Object.fromEntries(previews))
@@ -242,11 +242,7 @@ export default function Studio({ initialArt }) {
     const preview = exportPreview.current
     const context = preview.getContext('2d')
     context.clearRect(0, 0, preview.width, preview.height)
-    if (mode === 'Photo' && format === 'Card') {
-      renderQR(preview, content.data, art?.image, mode, format, settings, preview.width)
-    } else {
-      context.drawImage(canvas.current, 0, 0, preview.width, preview.height)
-    }
+    context.drawImage(canvas.current, 0, 0, preview.width, preview.height)
     exportDialog.current.showModal()
   }
 

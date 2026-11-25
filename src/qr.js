@@ -177,13 +177,13 @@ function drawPhoto(ctx, image, start, side, settings) {
   ctx.restore()
 }
 
-const photoMargin = (format, compact) => format === 'Stamp' ? 5 : compact ? 3.25 : 4
+const photoMargin = format => format === 'Stamp' ? 4.75 : 3.25
 
 export function drawPreviewSurface(canvas, image, mode, format, settings) {
   const pixels = 720
   canvas.width = canvas.height = pixels
   const ctx = canvas.getContext('2d', { willReadFrequently: true })
-  const modules = photoMargin(format, mode === 'Photo')
+  const modules = mode === 'Photo' ? photoMargin(format) : format === 'Stamp' ? 5 : 4
   const margin = pixels * modules / (29 + 2 * modules)
   const side = pixels - 2 * margin
   ctx.fillStyle = '#fff'
@@ -199,9 +199,9 @@ export function drawPreviewSurface(canvas, image, mode, format, settings) {
   if (format === 'Stamp') drawStampEdge(ctx, pixels, margin)
 }
 
-function drawPhotoQR(canvas, modules, image, format, settings, pixels, compact) {
+function drawPhotoQR(canvas, modules, image, format, settings, pixels) {
   const size = modules.size
-  const margin = photoMargin(format, compact)
+  const margin = photoMargin(format)
   const unit = pixels / (size + margin * 2)
   const start = unit * margin
   const side = size * unit
@@ -263,13 +263,13 @@ function drawPhotoQR(canvas, modules, image, format, settings, pixels, compact) 
   return { size, offset: start / pixels, span: side / pixels }
 }
 
-export function renderQR(canvas, data, image, mode, format, settings, pixels, { compactPhotoPreview = false } = {}) {
+export function renderQR(canvas, data, image, mode, format, settings, pixels) {
   const options = { errorCorrectionLevel: 'H' }
   let { modules } = QRCode.create(data, options)
   canvas.width = canvas.height = pixels
   if (mode === 'Photo') {
     if (modules.size < 29) ({ modules } = QRCode.create(data, { ...options, version: 3 }))
-    return drawPhotoQR(canvas, modules, image, format, settings, pixels, compactPhotoPreview)
+    return drawPhotoQR(canvas, modules, image, format, settings, pixels)
   }
   const size = modules.size
   const margin = format === 'Stamp' ? 5 : 4
