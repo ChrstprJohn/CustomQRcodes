@@ -63,7 +63,8 @@
 @media (hover: hover) {
   .gallery-card:hover { scale: 1.06; box-shadow: 0 19px 42px #43395748; }
 }
-.gallery-card img { display: block; width: 100%; aspect-ratio: 1; border-radius: 0; scale: 1.05; pointer-events: none; }
+.gallery-card img, .viewer-image img { display: block; width: 100%; aspect-ratio: 1; scale: 1.05; }
+.gallery-card img { pointer-events: none; }
 .gallery-view {
   position: absolute; z-index: 2; top: var(--view-y, 50%); left: var(--view-x, 50%); translate: -50% -50%;
   padding: .65em 1em; border-radius: 999px; color: #fff; background: #131313;
@@ -154,7 +155,7 @@
 .viewer-meta { min-width: 0; max-width: 100%; }
 .viewer-image {
   display: block; width: min(420px, 100%, max(185px, calc(100svh - 185px))); aspect-ratio: 1;
-  background: #fff; border-radius: 22px; box-shadow: 0 16px 42px #2b294030;
+  overflow: hidden; background: #fff; border-radius: 22px; box-shadow: 0 16px 42px #2b294030;
 }
 .viewer-main h2 { margin: 15px 0 6px; max-width: 100%; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; font-size: clamp(16px, 2vw, 23px); font-weight: 500; letter-spacing: -.035em; }
 .viewer-credit, .viewer-navigation { font: 12px var(--mono); text-transform: uppercase; letter-spacing: .045em; }

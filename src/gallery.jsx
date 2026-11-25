@@ -311,7 +311,9 @@ function GalleryDialog({ item, artwork, onClose, onUse, onSelect }) {
         <button type="button" aria-label="Close preview" onClick={dismiss}><ScrambleLabel revealOnMount>Close ×</ScrambleLabel></button>
       </header>
       <article className="viewer-main">
-        <img key={item.name} className="viewer-image" src={item.code} alt={'Visual QR code featuring ' + item.name} />
+        <div key={item.name} className="viewer-image">
+          <img src={item.code} alt={'Visual QR code featuring ' + item.name} />
+        </div>
         <div className="viewer-meta" key={'meta-' + item.name}>
           <h2 id="gallery-dialog-title" title={item.name}>{item.name}</h2>
           <p className="viewer-credit">Image by {item.url ? <a href={item.url} target="_blank" rel="noreferrer"><ScrambleLabel revealOnMount>{item.artist.split(' (')[0]}</ScrambleLabel></a> : <ScrambleLabel revealOnMount>{item.artist}</ScrambleLabel>}</p>
