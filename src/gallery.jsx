@@ -147,35 +147,43 @@ function PixelReveal() {
   const canvas = useRef(null)
   const [done, setDone] = useState(hasRevealedGallery)
   useGSAP(() => {
-    if (done || matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    const layer = canvas.current
-    const context = layer.getContext('2d')
-    const progress = { value: 0 }
-    const paint = () => {
-      const { clientWidth: width, clientHeight: height } = layer
-      if (layer.width !== width || layer.height !== height) {
-        layer.width = width
-        layer.height = height
-      }
-      const columns = width < 640 ? 9 : 16
-      const cell = width / columns
-      const rows = Math.ceil(height / cell)
-      context.clearRect(0, 0, width, height)
-      context.fillStyle = '#eeecf3'
-      for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < columns; x++) {
-          const distance = Math.hypot((x + .5) / columns - .5, (y + .5) / rows - .5)
-          const random = (Math.sin(x * 17.13 + y * 43.91) * 13758.54) % 1
-          if (progress.value < distance * 1.04 + Math.abs(random) * .26) {
-            context.fillRect(Math.floor(x * cell), Math.floor(y * cell), Math.ceil(cell) + 1, Math.ceil(cell) + 1)
-          }
-        }
-      }
+    if (done) return
+    const finish = () => { hasRevealedGallery = true; setDone(true) }
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      finish()
+      return
     }
-    paint()
+    const layer = canvas.current
+    if (matchMedia('(max-width: 680px), (pointer: coarse)').matches) {
+      gsap.to(layer, { opacity: 0, duration: .3, ease: 'power1.out', onComplete: finish })
+      return
+    }
+    const columns = 16
+    const rows = Math.max(1, Math.ceil(layer.clientHeight / layer.clientWidth * columns))
+    layer.width = columns
+    layer.height = rows
+    const context = layer.getContext('2d')
+    context.fillStyle = '#eeecf3'
+    const cells = Array.from({ length: columns * rows }, (_, index) => {
+      const x = index % columns
+      const y = Math.floor(index / columns)
+      const distance = Math.hypot((x + .5) / columns - .5, (y + .5) / rows - .5)
+      const random = (Math.sin(x * 17.13 + y * 43.91) * 13758.54) % 1
+      return { x, y, threshold: distance * 1.04 + Math.abs(random) * .26 }
+    }).sort((first, second) => first.threshold - second.threshold)
+    let nextCell = 0
+    const progress = { value: 0 }
+    context.fillRect(0, 0, columns, rows)
+    layer.style.background = 'transparent'
     gsap.to(progress, {
-      value: 1, duration: .68, ease: 'none', onStart: () => { layer.style.background = 'transparent' }, onUpdate: paint,
-      onComplete: () => { hasRevealedGallery = true; setDone(true) },
+      value: 1, duration: .68, ease: 'none',
+      onUpdate: () => {
+        while (nextCell < cells.length && cells[nextCell].threshold <= progress.value) {
+          const { x, y } = cells[nextCell++]
+          context.clearRect(x, y, 1, 1)
+        }
+      },
+      onComplete: finish,
     })
   }, { dependencies: [done], revertOnUpdate: true })
   return done ? null : <canvas ref={canvas} className="pixel-reveal" aria-hidden="true" />
