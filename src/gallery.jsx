@@ -85,8 +85,9 @@ function mixCardPoses(from, to, progress, camera) {
 
 function cardStyle(pose) {
   return {
-    '--motion-x': pose.x + 'px', '--motion-y': pose.y + 'px', '--motion-scale': pose.size / 200,
-    '--motion-angle': pose.angle + 'deg', '--motion-layer': pose.stacking, '--motion-haze': pose.haze,
+    '--motion-x': pose.x.toFixed(2) + 'px', '--motion-y': pose.y.toFixed(2) + 'px',
+    '--motion-scale': (pose.size / 200).toFixed(4), '--motion-angle': pose.angle.toFixed(2) + 'deg',
+    '--motion-layer': String(pose.stacking), '--motion-haze': pose.haze.toFixed(2),
   }
 }
 
@@ -343,9 +344,12 @@ export function Gallery({ artwork, onUse }) {
     const title = scene.querySelector('.gallery-title')
     const viewport = field.current
     const cards = [...viewport.children]
+    const cardStyles = cards.map(() => ({}))
     const progress = layoutProgress.current
     let camera
     let paintedOrbit
+    let paintedPointerX = 0
+    let paintedPointerY = 0
     const paint = (scroll = 0, rotation = initialRotation, pointerX = 0, pointerY = 0, zoom = 1, orbitTurn = 0) => {
       const titleX = pointerX * 6
       const titleY = pointerY * 6
@@ -363,11 +367,20 @@ export function Gallery({ artwork, onUse }) {
           if (element.style.visibility !== 'hidden') element.style.visibility = 'hidden'
           return
         }
-        for (const [property, value] of Object.entries(cardStyle(pose))) element.style.setProperty(property, value)
+        const previous = cardStyles[index]
+        for (const [property, value] of Object.entries(cardStyle(pose))) {
+          if (previous[property] === value) continue
+          element.style.setProperty(property, value)
+          previous[property] = value
+        }
         if (element.style.visibility !== 'visible') element.style.visibility = 'visible'
       })
-      grid.style.translate = -pointerX * 18 + 'px ' + -pointerY * 18 + 'px'
-      title.style.translate = titleX + 'px ' + titleY + 'px'
+      if (pointerX !== paintedPointerX || pointerY !== paintedPointerY) {
+        grid.style.translate = -pointerX * 18 + 'px ' + -pointerY * 18 + 'px'
+        title.style.translate = titleX + 'px ' + titleY + 'px'
+        paintedPointerX = pointerX
+        paintedPointerY = pointerY
+      }
     }
     let draw = paint
     redraw.current = () => draw()
@@ -399,8 +412,6 @@ export function Gallery({ artwork, onUse }) {
       let headlineIntro = true
       let touchY
       const canHover = matchMedia('(hover: hover)').matches
-      const coarsePointer = matchMedia('(pointer: coarse)').matches
-      let frameTime = 0
       const headlineWords = [...title.querySelectorAll('.headline-word')]
       const headlineLetters = headlineWords.map(word => [...word.querySelectorAll('.headline-letter')])
       const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789#%&*+=<>/'
@@ -434,10 +445,7 @@ export function Gallery({ artwork, onUse }) {
         onComplete: settleHeadline,
       })
       const drift = (_time, delta) => {
-        frameTime += delta
-        if (coarsePointer && progress.orbit === 0 && scene.dataset.layout === 'Spiral' && frameTime < 1000 / 30) return
-        const elapsed = Math.min(frameTime, 50)
-        frameTime = 0
+        const elapsed = Math.min(delta, 50)
         if (document.hidden || root.current.querySelector('dialog[open]')) return
         const step = elapsed / 1000
         headlineTime += elapsed
