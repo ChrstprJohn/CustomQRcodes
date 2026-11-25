@@ -143,13 +143,13 @@ details p { color: var(--muted); font-size: 13px; padding-bottom: 14px; line-hei
 
 @font-face {
   font-family: "General Sans";
-  src: url("./general-sans.woff2?inline") format("woff2");
+  src: url("./general-sans.woff2") format("woff2");
   font-weight: 200 700;
   font-display: swap;
 }
 @font-face {
   font-family: "Departure Mono";
-  src: url("./departure-mono.woff2?inline") format("woff2");
+  src: url("./departure-mono.woff2") format("woff2");
   font-display: swap;
 }
 body {

@@ -2,20 +2,10 @@ import React, { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { useGSAP } from '@gsap/react'
 import { ArrowLeft, ArrowUpRight } from 'lucide-react'
-export async function getArtwork() {
-  const { loadSamples } = await import('./samples')
-  const samples = await loadSamples()
-  const lead = [0, 1, 8, 9, 11, 15]
-  const gallery = [...lead.map(index => samples[index]), ...samples.filter((_, index) => !lead.includes(index))]
-  return gallery.map((sample, index) => ({
-    ...sample, code: import.meta.env.BASE_URL + 'gallery-qr/' + index + '.webp', verified: true,
-  }))
-}
 
 const cardsPerTurn = 12
 const turnCount = 5
 const galleryCardCount = cardsPerTurn * turnCount
-const sampleCount = 44
 const initialRotation = Math.PI / cardsPerTurn
 const goldenAngle = Math.PI * (3 - Math.sqrt(5))
 const orbitRimDepth = -.68
@@ -345,6 +335,7 @@ export function Gallery({ artwork, onUse }) {
   const redraw = useRef(null)
   const [active, setActive] = useState(null)
   const [layout, setLayout] = useState('Spiral')
+  const [initialCamera] = useState(() => cameraFor(innerWidth, innerHeight))
 
   useGSAP(() => {
     const scene = root.current.querySelector('.gallery-scene')
@@ -590,13 +581,13 @@ export function Gallery({ artwork, onUse }) {
           <button className="about-link" onClick={() => setActive('about')}><ScrambleLabel>About</ScrambleLabel></button>
         </div>
       </footer>
-      <div className="composition" ref={field} aria-busy={artwork.length < sampleCount}>
+      <div className="composition" ref={field} aria-busy={false}>
         {Array.from({ length: galleryCardCount }, (_, index) => {
-          const item = artwork[(index + 20) % sampleCount]
-          const pose = projectCard(index, cameraFor(innerWidth, innerHeight))
+          const item = artwork[(index + 20) % artwork.length]
+          const pose = projectCard(index, initialCamera)
           return <div className="gallery-position" key={index} data-turn={Math.floor(index / cardsPerTurn)}
             style={{ ...cardStyle(pose), visibility: pose.visible ? 'visible' : 'hidden' }}>
-            {item ? <button className="gallery-card" aria-label={'View ' + item.name}
+            <button className="gallery-card" aria-label={'View ' + item.name}
               onPointerEnter={positionView} onPointerMove={positionView} onPointerLeave={event => event.currentTarget.removeAttribute('data-view-pointer')}
               onPointerDown={event => {
                 if (event.pointerType !== 'touch' || !event.isPrimary) return
@@ -613,7 +604,7 @@ export function Gallery({ artwork, onUse }) {
               }}>
               <img src={item.code} alt="" loading={pose.visible ? 'eager' : 'lazy'} decoding="async" draggable="false" />
               <span className="gallery-view" aria-hidden="true">View</span>
-            </button> : <div className="gallery-card-skeleton" aria-hidden="true" />}
+            </button>
           </div>
         })}
       </div>
