@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#142923">
+<meta name="description" content="Create a scannable QR code from your own artwork. Free, private, and entirely in your browser.">
+<title>BrandQR — Visual QR Studio</title>
+<style>
+  .startup { position: fixed; inset: 0; display: grid; place-items: center; background: #e7e5ee; }
+  .startup::before { content: ""; width: min(34vw, 170px); aspect-ratio: 1; border: 10px solid #fff; border-radius: 16px; background: #d5d1df; }
+  @media (prefers-reduced-motion: no-preference) {
+    .startup::before { background: linear-gradient(110deg, #d5d1df 30%, #eeecf3 49%, #d5d1df 68%) 100% / 240% 100%; animation: startup-shimmer 1.55s ease-in-out infinite; }
+  }
+  @keyframes startup-shimmer { to { background-position: 0; } }
+</style>
+</head>
+<body><div id="root"><div class="startup" role="status" aria-label="Loading BrandQR"></div></div><script type="module" src="/src/main.jsx"></script></body>
+</html>
