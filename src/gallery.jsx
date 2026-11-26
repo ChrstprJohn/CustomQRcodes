@@ -145,12 +145,9 @@ function PixelReveal() {
       return
     }
     const layer = canvas.current
-    if (matchMedia('(max-width: 680px), (pointer: coarse)').matches) {
-      gsap.to(layer, { opacity: 0, duration: .3, ease: 'power1.out', onComplete: finish })
-      return
-    }
-    const columns = 16
-    const rows = Math.max(1, Math.ceil(layer.clientHeight / layer.clientWidth * columns))
+    const mobile = matchMedia('(max-width: 680px), (pointer: coarse)').matches
+    const columns = mobile ? 9 : 16
+    const rows = Math.max(1, Math.ceil(layer.clientHeight / Math.max(1, layer.clientWidth) * columns))
     layer.width = columns
     layer.height = rows
     const context = layer.getContext('2d')
@@ -167,7 +164,7 @@ function PixelReveal() {
     context.fillRect(0, 0, columns, rows)
     layer.style.background = 'transparent'
     gsap.to(progress, {
-      value: 1, duration: .68, ease: 'none',
+      value: 1, duration: mobile ? .44 : .68, ease: 'none',
       onUpdate: () => {
         while (nextCell < cells.length && cells[nextCell].threshold <= progress.value) {
           const { x, y } = cells[nextCell++]
@@ -349,6 +346,7 @@ export function Gallery({ artwork, onUse }) {
     const cardStyles = cards.map(() => ({}))
     const progress = layoutProgress.current
     let camera
+    let transitionPoses
     let paintedOrbit
     let paintedPointerX = 0
     let paintedPointerY = 0
@@ -357,15 +355,22 @@ export function Gallery({ artwork, onUse }) {
       const titleY = pointerY * 6
       const orbit = progress.orbit
       const orbitRotation = initialRotation + (rotation - initialRotation) * .42 + orbitTurn
+      if (orbit === 0 || orbit === 1) transitionPoses = undefined
+      else if (!transitionPoses) {
+        transitionPoses = cards.map((_, index) => {
+          const spiral = projectCard(index, camera, scroll, rotation, pointerX, pointerY)
+          const orbit = projectOrbit(index, camera, zoom, orbitRotation, pointerX)
+          // Cards outside both views don't need to cross the screen during a switch.
+          return spiral.visible || orbit.visible ? { spiral, orbit } : null
+        })
+      }
       paintedOrbit = orbit
       cards.forEach((element, index) => {
-        let pose
-        if (orbit < 1) pose = projectCard(index, camera, scroll, rotation, pointerX, pointerY)
-        if (orbit > 0) {
-          const orbitalPose = projectOrbit(index, camera, zoom, orbitRotation, pointerX)
-          pose = orbit === 1 ? orbitalPose : mixCardPoses(pose, orbitalPose, orbit, camera)
-        }
-        if (!pose.visible) {
+        const endpoints = transitionPoses?.[index]
+        const pose = transitionPoses ? endpoints && mixCardPoses(endpoints.spiral, endpoints.orbit, orbit, camera)
+          : orbit === 0 ? projectCard(index, camera, scroll, rotation, pointerX, pointerY)
+          : projectOrbit(index, camera, zoom, orbitRotation, pointerX)
+        if (!pose?.visible) {
           if (element.style.visibility !== 'hidden') element.style.visibility = 'hidden'
           return
         }
@@ -388,6 +393,7 @@ export function Gallery({ artwork, onUse }) {
     redraw.current = () => draw()
     const measure = () => {
       camera = cameraFor(viewport.clientWidth, viewport.clientHeight)
+      transitionPoses = undefined
       draw()
     }
     measure()
@@ -460,6 +466,11 @@ export function Gallery({ artwork, onUse }) {
         } else if (headlineIntro && headlineTime >= 1400) {
           headlineIntro = false
           scramble.restart()
+        }
+        // Move the cards between fixed poses and let input targets ease in after the switch.
+        if (progress.orbit > 0 && progress.orbit < 1) {
+          if (paintedOrbit !== progress.orbit) draw()
+          return
         }
         const scrollDelta = (scrollTarget - scroll) * (1 - Math.exp(-10 * step))
         const orbitEase = 1 - Math.exp(-6 * step)
@@ -559,7 +570,7 @@ export function Gallery({ artwork, onUse }) {
       progress.orbit = orbit
       redraw.current?.()
     } else if (progress.orbit !== orbit || gsap.getTweensOf(progress).length) {
-      gsap.to(progress, { orbit, duration: .72, ease: 'power3.inOut', overwrite: true })
+      gsap.to(progress, { orbit, duration: .55, ease: 'power2.inOut', overwrite: true })
     }
   }, { scope: root, dependencies: [layout] })
 

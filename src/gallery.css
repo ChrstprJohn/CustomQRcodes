@@ -108,7 +108,6 @@
 }
 .pixel-reveal { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 110; background: #eeecf3; image-rendering: pixelated; pointer-events: none; }
 @media (max-width: 680px), (pointer: coarse) {
-  .pixel-reveal { opacity: .48; }
   .gallery-card { box-shadow: 0 8px 20px #43395726; }
 }
 .scroll-cue { position: absolute; z-index: 95; bottom: 23px; inset-inline: 0; text-align: center; pointer-events: none; }
