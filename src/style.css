@@ -378,6 +378,13 @@ body {
 .faq-row p { max-width: 62ch; padding: 0 0 18px; color: var(--muted); line-height: 1.55; }
 @media (min-width: 821px) and (max-height: 690px) {
   #settings-0 .field-label { margin-block: 12px 6px; }
+@media (max-width: 680px) {
+  .faq-page { min-block-size: 100svh; }
+  .faq-page h1 { margin: 24px 0 16px; font-size: clamp(1.5rem, 1.2rem + 2vw, 1.75rem); line-height: 1.1; }
+  .faq-page .help { padding-block: 5px; }
+  .faq-row button { min-block-size: 44px; padding-block: 10px; font-size: .875rem; line-height: 1.35; }
+  .faq-row p { padding-bottom: 13px; font-size: .875rem; }
+}
   .style-choices img { width: min(100%, 52px); }
   .drop-action { min-height: clamp(108px, 22dvh, 150px); }
 }

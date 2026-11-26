@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { useGSAP } from '@gsap/react'
-import { ArrowLeft, ArrowUpRight } from 'lucide-react'
+import { ArrowLeft, ArrowUpRight, ChevronDown } from 'lucide-react'
 
 const cardsPerTurn = 12
 const turnCount = 5
@@ -589,13 +589,32 @@ export function Gallery({ artwork, onUse }) {
       <GalleryGrid />
       <header className="gallery-header">
         <a className="wordmark" href="#/" aria-label="BrandQR home"><ScrambleLabel>BrandQR</ScrambleLabel></a>
-        <a className="pill gallery-cta" href="#/studio"><ScrambleLabel>Create QRcode</ScrambleLabel></a>
-      </header>
-      <footer className="gallery-toolbar">
-        <a href="#/credits" aria-label="Artwork credits"><ScrambleLabel>Credits</ScrambleLabel></a>
         <div className="gallery-modes" role="group" aria-label="Gallery layout">
           {['Spiral', 'Orbit'].map(mode => <button type="button" key={mode}
             aria-pressed={layout === mode} onClick={() => setLayout(mode)}>{mode}</button>)}
+        </div>
+      </header>
+      <div className="gallery-hero">
+        <div className="gallery-title">
+          <h1 aria-label={'Custom QR codes for ' + headlineUses.join(', ')}>
+            Custom QR codes for
+            <span className="headline-words" aria-hidden="true">
+              {headlineUses.map((use, index) => <span className="headline-word" key={use}
+                data-current={index === 0 ? '' : undefined}>
+                {[...use].map((letter, index) => letter === ' ' ? ' ' :
+                  <span className="headline-letter" key={index}><span>{letter}</span></span>)}
+                <span className="headline-glitch"><span /><span /><span /></span>
+              </span>)}
+            </span>
+          </h1>
+        </div>
+        <a className="pill gallery-cta" href="#/studio"><ScrambleLabel>Create QRcode</ScrambleLabel></a>
+      </div>
+      <footer className="gallery-toolbar">
+        <a href="#/credits" aria-label="Artwork credits"><ScrambleLabel>Credits</ScrambleLabel></a>
+        <div className="scroll-cue">
+          <span className="wheel-cue">Scroll to explore</span><span className="touch-cue">Swipe to explore</span>
+          <ChevronDown size={13} aria-hidden="true" />
         </div>
         <div className="gallery-footer-links">
           <a href="#/faq" aria-label="FAQ"><ScrambleLabel>FAQ</ScrambleLabel></a>
@@ -629,20 +648,6 @@ export function Gallery({ artwork, onUse }) {
           </div>
         })}
       </div>
-      <div className="gallery-title">
-        <h1 aria-label={'Custom QR codes for ' + headlineUses.join(', ')}>
-          Custom QR codes for
-          <span className="headline-words" aria-hidden="true">
-            {headlineUses.map((use, index) => <span className="headline-word" key={use}
-              data-current={index === 0 ? '' : undefined}>
-              {[...use].map((letter, index) => letter === ' ' ? ' ' :
-                <span className="headline-letter" key={index}><span>{letter}</span></span>)}
-              <span className="headline-glitch"><span /><span /><span /></span>
-            </span>)}
-          </span>
-        </h1>
-      </div>
-      <div className="scroll-cue"><span className="wheel-cue">Scroll to explore</span><span className="touch-cue">Swipe to explore</span></div>
       <PixelReveal />
     </section>
     {active && <GalleryDialog item={active} artwork={artwork} onClose={() => setActive(null)} onUse={onUse} onSelect={setActive} />}
