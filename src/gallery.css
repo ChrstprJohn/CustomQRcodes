@@ -228,7 +228,10 @@
   }
   .gallery-toolbar :is(a, .about-link) { display: inline-flex; align-items: center; min-height: 28px; }
   .gallery-modes { top: 2px; left: auto; right: 0; translate: none; }
-  .gallery-cta { position: static; grid-row: 3; place-self: start center; margin-top: 16px; }
+  .gallery-cta {
+    position: static; grid-row: 3; place-self: start center; margin-top: 16px;
+    min-block-size: 44px; padding-inline: 21px;
+  }
   .gallery-title { margin-inline: 16px; }
   .gallery-title h1 { font-size: clamp(1.75rem, 9.7vw, 2.65rem); }
   .scroll-cue { display: none; }
