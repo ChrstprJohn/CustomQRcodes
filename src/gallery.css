@@ -41,12 +41,9 @@
   .gallery-modes button { transition: background-color .16s ease-out, color .16s ease-out; }
 }
 .scramble-label { position: relative; display: inline-block; white-space: nowrap; }
-.scramble-label > [aria-hidden] { position: absolute; inset: 0; text-align: left; pointer-events: none; }
-.scramble-label[data-scrambling] > :first-child { opacity: 0; }
+.scramble-label > [aria-hidden] { position: absolute; inset: 0; overflow: clip; text-align: left; pointer-events: none; }
 @media (prefers-reduced-motion: no-preference) {
-  .scramble-label[data-entering] { min-height: 1em; }
-  .scramble-label[data-entering] > :first-child { position: absolute; clip-path: inset(50%); }
-  .scramble-label[data-entering] > [aria-hidden] { position: static; }
+  .scramble-label:is([data-entering], [data-scrambling]) > :first-child { opacity: 0; }
 }
 .gallery-toolbar {
   bottom: 23px; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
@@ -177,6 +174,7 @@
 .viewer-credit, .viewer-navigation { font: 12px var(--mono); text-transform: uppercase; letter-spacing: .045em; }
 .viewer-credit { color: #625e6a; }
 .viewer-credit a { color: var(--ink); text-decoration: none; }
+.viewer-credit .scramble-label { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
 :is(.viewer-credit a, .viewer-header button, .viewer-navigation > button:not(.pill)) .scramble-label::before {
   content: ""; position: absolute; inset: -4px -8px; border-radius: 999px;
   background: currentColor; opacity: 0; pointer-events: none; transition: opacity .2s;
@@ -184,7 +182,7 @@
 :is(.viewer-credit a, .viewer-header button, .viewer-navigation > button:not(.pill)):hover .scramble-label::before { opacity: .08; }
 :is(.viewer-credit a, .viewer-header button, .viewer-navigation > button:not(.pill)):focus-visible .scramble-label::before { opacity: .1; }
 :is(.viewer-credit a, .viewer-header button, .viewer-navigation > button:not(.pill)):active .scramble-label::before { opacity: .14; }
-.viewer-navigation { display: flex; align-items: center; justify-content: center; gap: 18px; margin-top: 22px; }
+.viewer-navigation { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 18px; margin-top: 22px; }
 .viewer-navigation > button { text-transform: uppercase; }
 .viewer-navigation > button:not(.pill) { padding: 8px 2px; }
 .viewer-navigation .pill { font: inherit; padding-inline: 20px; transition: background-color .2s; }
