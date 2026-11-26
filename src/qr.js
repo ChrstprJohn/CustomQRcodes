@@ -186,7 +186,7 @@ export function drawPreviewSurface(canvas, image, mode, format, settings) {
   const modules = mode === 'Photo' ? photoMargin(format) : format === 'Stamp' ? 5 : 4
   const margin = pixels * modules / (29 + 2 * modules)
   const side = pixels - 2 * margin
-  ctx.fillStyle = '#fff'
+  ctx.fillStyle = image ? '#fff' : '#e5e0ef'
   ctx.fillRect(0, 0, pixels, pixels)
   if (image) {
     ctx.save()

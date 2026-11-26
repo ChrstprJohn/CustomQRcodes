@@ -5,10 +5,10 @@ import {
   CalendarDays, ChevronRight, CircleDollarSign, FileText, Globe2, Mail, MapPin,
   MessageSquare, Music2, Phone, Search, Share2, ShoppingBag, Star, UserRound, Video, Wifi, X,
 } from 'lucide-react'
-import { additionalTypes, primaryTypes } from './content-types'
+import { additionalTypes } from './content-types'
 import logos from './content-icons.json'
 
-const groups = [additionalTypes[1], additionalTypes[0], ...additionalTypes.slice(2), ['Basics', primaryTypes]]
+const groups = [additionalTypes[1], additionalTypes[0], ...additionalTypes.slice(2)]
 const total = groups.reduce((count, [, types]) => count + types.length, 0)
 const phoneLayout = () => matchMedia('(max-width: 680px)').matches
 const groupIcons = {

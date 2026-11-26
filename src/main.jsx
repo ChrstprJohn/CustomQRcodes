@@ -32,9 +32,10 @@ function FaqRow({ question, answer, index }) {
   </div>
 }
 
-function Faq() {
+function Faq({ fromStudio }) {
+  const backLabel = fromStudio ? 'Back to Studio' : 'Back to gallery'
   return <main className="faq-page shell">
-    <header className="credits-header"><a className="back-link" href="#/" aria-label="Back to gallery"><ArrowLeft size={13} /> <ScrambleLabel>Back to gallery</ScrambleLabel></a></header>
+    <header className="credits-header"><a className="back-link" href={fromStudio ? '#/studio' : '#/'} aria-label={backLabel}><ArrowLeft size={13} /> <ScrambleLabel>{backLabel}</ScrambleLabel></a></header>
     <h1>Frequently asked questions</h1>
     <section className="help" aria-label="Answers">{questions.map(([question, answer], index) =>
       <FaqRow key={question} question={question} answer={answer} index={index} />)}</section>
@@ -42,26 +43,38 @@ function Faq() {
 }
 
 function getRoute() {
-  return (location.hash.startsWith('#/') ? location.hash.slice(1) : location.pathname).replace(/\/$/, '') || '/'
+  const [path, query] = (location.hash.startsWith('#/') ? location.hash.slice(1) : location.pathname + location.search).split('?')
+  const route = path.replace(/\/$/, '') || '/'
+  return { route, studioFaq: route === '/faq' && new URLSearchParams(query).get('from') === 'studio' }
 }
 
 function App() {
-  const [route, setRoute] = useState(getRoute)
+  const [{ route, studioFaq, retainedStudio }, setNavigation] = useState(getRoute)
   const [initialArt, setInitialArt] = useState(null)
   useEffect(() => {
-    const navigate = () => setRoute(getRoute())
+    const navigate = () => {
+      const next = getRoute()
+      setNavigation(current => ({
+        ...next,
+        retainedStudio: next.studioFaq && (current.route === '/studio' || current.retainedStudio),
+      }))
+    }
     window.addEventListener('hashchange', navigate)
     return () => window.removeEventListener('hashchange', navigate)
   }, [])
   useEffect(() => {
     window.scrollTo(0, 0)
-    if (route !== '/studio') setInitialArt(null)
+    if (route !== '/studio' && !studioFaq) setInitialArt(null)
     const titles = { '/studio': 'QR art studio', '/credits': 'Artwork credits', '/faq': 'Frequently asked questions' }
     document.title = 'BrandQR — ' + (titles[route] || 'Visual QR gallery')
-  }, [route])
-  if (route === '/studio') return <Suspense fallback={null}><Studio initialArt={initialArt} /></Suspense>
+  }, [route, studioFaq])
+  if (route === '/studio' || route === '/faq') return <>
+    {(route === '/studio' || retainedStudio) && <Suspense fallback={null}>
+      <Studio initialArt={initialArt} hidden={studioFaq} />
+    </Suspense>}
+    {route === '/faq' && <Faq fromStudio={studioFaq} />}
+  </>
   if (route === '/credits') return <Credits artwork={galleryArtwork} />
-  if (route === '/faq') return <Faq />
   return <Gallery artwork={galleryArtwork} onUse={item => {
     setInitialArt(item)
     location.hash = '/studio'

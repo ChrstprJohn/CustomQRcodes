@@ -1,7 +1,7 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { useGSAP } from '@gsap/react'
-import { ArrowDownToLine, ArrowLeft, Check, ChevronDown, CircleAlert, Image as ImageIcon, RotateCcw, ScanLine, Upload, X } from 'lucide-react'
+import { ArrowDownToLine, ArrowLeft, Bot, Check, ChevronDown, CircleAlert, Image as ImageIcon, RotateCcw, Upload, X } from 'lucide-react'
 import { isLinkType, linkExamples, primaryTypes } from './content-types'
 import { TypePicker } from './type-picker'
 import { defaults, demoArtwork, drawPreviewSurface, payload, renderQR, verifyQR } from './qr'
@@ -60,13 +60,13 @@ function StyleChoices({ art, mode, onChange }) {
   }, [image])
   return <div className="style-choices" role="group" aria-label="QR style">
     {qrStyles.map(style => <button type="button" key={style} aria-pressed={style === mode} onClick={() => onChange(style)}>
-      {thumbnails[style] && <img src={thumbnails[style]} alt="" />}
+      {thumbnails[style] && <span className="style-preview"><img src={thumbnails[style]} alt="" /></span>}
       <span>{style}</span>
     </button>)}
   </div>
 }
 
-export default function Studio({ initialArt }) {
+export default function Studio({ initialArt, hidden }) {
   const root = useRef(null)
   const canvas = useRef(null)
   const previewStage = useRef(null)
@@ -144,6 +144,11 @@ export default function Studio({ initialArt }) {
   const emptyPrompt = processed?.error ? processed.error
     : edited && enteredContent ? 'Check the content fields'
     : contentPrompt + (missingImage ? ' and add an image' : '')
+  const downloadLabel = exporting ? 'Preparing PNG…'
+    : canDownload ? 'Download PNG'
+    : processed?.error ? 'QR preview unavailable'
+    : !content.error ? 'Preparing QR…'
+    : enteredContent ? 'Check content fields' : 'Add QR content'
   const showScanWarning = !contentError && settled && !scanVerified
   const showImagePrompt = !contentError && missingImage && !showScanWarning
   const artDimensions = art && (art.image.naturalWidth || art.image.width) + '×' + (art.image.naturalHeight || art.image.height)
@@ -345,14 +350,14 @@ export default function Studio({ initialArt }) {
       onClick={() => resetDialog.current.showModal()}><RotateCcw size={17} /></button>
     <button className="download" disabled={!canDownload || exporting} aria-busy={exporting} aria-haspopup="dialog"
       onClick={openExport}>
-      <ArrowDownToLine size={18} />{exporting ? 'Preparing PNG…' : 'Download PNG'}
+      {canDownload && !exporting && <ArrowDownToLine size={18} aria-hidden="true" />}{downloadLabel}
     </button>
   </div>
 
-  return <div ref={root} className="studio-page" data-qr-docked={showDock || undefined}>
+  return <div ref={root} className="studio-page" hidden={hidden} data-qr-docked={showDock || undefined}>
     <header className="top"><div className="shell nav">
       <a href="#/" className="wordmark" aria-label="Back to gallery"><ArrowLeft size={13} /> <ScrambleLabel>Back to gallery</ScrambleLabel></a>
-      <nav aria-label="Studio navigation"><a href="#/faq" aria-label="FAQ"><ScrambleLabel>FAQ</ScrambleLabel></a></nav>
+      <nav aria-label="Studio navigation"><a href="#/faq?from=studio" aria-label="FAQ"><ScrambleLabel>FAQ</ScrambleLabel></a></nav>
     </div></header>
     <main className="shell" id="studio">
       <section className="intro">
@@ -370,8 +375,6 @@ export default function Studio({ initialArt }) {
               <DisclosurePanel id={'settings-' + index} open={visible}><div className="editor-panel">
             {index === 0 && <>
               <h2 className="sr-only">Set the destination</h2>
-              <div className="field-label">QR style</div>
-              <StyleChoices art={art} mode={mode} onChange={next => { setMode(next); setExportMessage('') }} />
               <div className="field-label">Content type</div>
               <PillChoices className="content-types" label="Content type" count={4} selected={moreTypes || additionalTypeSelected ? 3 : primaryTypes.indexOf(type)}>
                 {primaryTypes.map(option => <button type="button" key={option} aria-pressed={type === option} onClick={() => selectType(option)}>{option}</button>)}
@@ -407,6 +410,8 @@ export default function Studio({ initialArt }) {
                 <textarea id={'message-' + type} rows="2" placeholder="Write a message" value={details[type + 'Message'] ?? ''} onChange={event => updateDetail(type + 'Message', event.target.value)} />
               </>}
               {contentError && edited && <p className="error" role="status">{contentError}</p>}
+              <div className="field-label">QR style</div>
+              <StyleChoices art={art} mode={mode} onChange={next => { setMode(next); setExportMessage('') }} />
             </>}
             {index === 1 && <>
               <h2 className="sr-only">Add your artwork</h2>
@@ -455,16 +460,17 @@ export default function Studio({ initialArt }) {
         <section className="preview" aria-label="QR code preview">
           <div className="preview-header">
             <h2>Live preview</h2>
-            <span className={scanVerified ? 'status good' : 'status'} data-neutral={!!contentError || !settled} role="status">{contentError ? 'Enter content' : !settled ? 'Checking…' : scanVerified ? <><Check size={13} /> Scan verified</> : 'Not verified'}</span>
+            <span className={scanVerified ? 'status good' : 'status'} data-neutral={!!contentError || !settled} role="status">{contentError ? 'Enter content' : !settled ? 'Checking…' : scanVerified ? <><Check size={13} /> Ready to scan</> : 'Check scan'}</span>
           </div>
           <div className="preview-field">
             <div className="preview-stack">
               {showScanWarning && <p className="preview-note" data-warning role="status"><CircleAlert size={14} />Check this QR with your phone.</p>}
-              <div ref={previewStage} className="qr-stage" data-format={format} data-modules={area?.size}>
+              <div ref={previewStage} className="qr-stage" data-format={format} data-modules={area?.size}
+                data-placeholder={!qrReady && !draftImage || undefined}>
                 {showImagePrompt && <p className="preview-note"><ImageIcon size={14} />{mode === 'Logo' ? 'Open Image to upload a logo.' : 'Open Image to upload artwork.'}</p>}
                 <canvas ref={canvas} role="img" aria-label={draftImage ? 'Artwork preview' : 'Generated QR code'}
                   aria-hidden={!qrReady && !draftImage} style={{ visibility: qrReady || draftImage || showStampSurface ? 'visible' : 'hidden' }} />
-                {contentError && !draftImage && <div className="empty"><ScanLine aria-hidden="true" size={29} strokeWidth={1.45} /><span>{emptyPrompt}</span></div>}
+                {contentError && !draftImage && <div className="empty"><Bot aria-hidden="true" size={34} strokeWidth={1.6} /><span>{emptyPrompt}</span></div>}
               </div>
             </div>
           </div>
@@ -515,7 +521,8 @@ export default function Studio({ initialArt }) {
       <button type="button" className="download" disabled={!canDownload || exporting || !validSize} onClick={() => {
         exportDialog.current.close()
         download()
-      }}><ArrowDownToLine size={18} />Download PNG</button>
+      }}>{canDownload && !exporting && validSize && <ArrowDownToLine size={18} aria-hidden="true" />}
+        {validSize ? downloadLabel : 'Enter a valid size'}</button>
     </dialog>
     <dialog className="reset-dialog" ref={resetDialog} aria-labelledby="reset-title" aria-describedby="reset-description"
       onClose={event => {

@@ -1,4 +1,4 @@
-export const primaryTypes = ['Website', 'Text', 'Wi-Fi']
+export const primaryTypes = ['Website', 'Contact', 'Instagram']
 
 export const additionalTypes = [
   ['Contact and messaging', ['WhatsApp', 'Phone number', 'SMS', 'Email', 'Telegram', 'Signal', 'Messenger', 'Viber', 'LINE', 'Contact']],
@@ -9,6 +9,7 @@ export const additionalTypes = [
   ['Links and files', ['PDF', 'Google Drive', 'Dropbox', 'Linktree', 'App download', 'Image', 'Spreadsheet', 'Presentation', 'File', 'Landing page', 'Short link']],
   ['Meetings', ['Zoom', 'Google Meet', 'Microsoft Teams']],
   ['Shopping and payments', ['Etsy', 'Amazon', 'PayPal', 'Venmo', 'Cash App', 'Stripe', 'Bitcoin payment']],
+  ['Basics', ['Website', 'Text', 'Wi-Fi']],
 ]
 
 const nativeTypes = new Set(['Text', 'Wi-Fi', 'Contact', 'Phone number', 'Email', 'SMS'])
