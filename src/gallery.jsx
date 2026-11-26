@@ -330,6 +330,7 @@ function GalleryDialog({ item, artwork, onClose, onUse, onSelect }) {
 export function Gallery({ artwork, onUse }) {
   const root = useRef(null)
   const field = useRef(null)
+  const cursorView = useRef(null)
   const touch = useRef(null)
   const layoutProgress = useRef({ orbit: 0 })
   const redraw = useRef(null)
@@ -574,18 +575,16 @@ export function Gallery({ artwork, onUse }) {
     }
   }, { scope: root, dependencies: [layout] })
 
-  function positionView(event) {
-    if (event.pointerType !== 'mouse') return
-    const card = event.currentTarget
-    const bounds = card.getBoundingClientRect()
-    const { clientX: x, clientY: y } = event
-    card.setAttribute('data-view-pointer', '')
-    card.style.setProperty('--view-x', gsap.utils.clamp(20, 80, (x - bounds.left) / bounds.width * 100) + '%')
-    card.style.setProperty('--view-y', gsap.utils.clamp(13, 87, (y - bounds.top) / bounds.height * 100) + '%')
+  function moveCursorView({ pointerType, clientX, clientY }) {
+    const cursor = cursorView.current
+    const mouse = pointerType === 'mouse'
+    if (cursor.hidden === mouse) cursor.hidden = !mouse
+    if (mouse) cursor.style.translate = clientX + 'px ' + clientY + 'px'
   }
 
   return <main className="gallery-page" ref={root}>
-    <section className="gallery-scene" aria-label="Visual QR gallery" tabIndex={0} data-layout={layout}>
+    <section className="gallery-scene" aria-label="Visual QR gallery" tabIndex={0} data-layout={layout}
+      onPointerMove={moveCursorView} onPointerOver={moveCursorView}>
       <GalleryGrid />
       <header className="gallery-header">
         <a className="wordmark" href="#/" aria-label="BrandQR home"><ScrambleLabel>BrandQR</ScrambleLabel></a>
@@ -628,7 +627,6 @@ export function Gallery({ artwork, onUse }) {
           return <div className="gallery-position" key={index} data-turn={Math.floor(index / cardsPerTurn)}
             style={{ ...cardStyle(pose), visibility: pose.visible ? 'visible' : 'hidden' }}>
             <button className="gallery-card" aria-label={'View ' + item.name}
-              onPointerEnter={positionView} onPointerMove={positionView} onPointerLeave={event => event.currentTarget.removeAttribute('data-view-pointer')}
               onPointerDown={event => {
                 if (event.pointerType !== 'touch' || !event.isPrimary) return
                 touch.current = { id: event.pointerId, x: event.clientX, y: event.clientY }
@@ -648,6 +646,7 @@ export function Gallery({ artwork, onUse }) {
           </div>
         })}
       </div>
+      <span ref={cursorView} className="gallery-cursor" aria-hidden="true" hidden>View</span>
       <PixelReveal />
     </section>
     {active && <GalleryDialog item={active} artwork={artwork} onClose={() => setActive(null)} onUse={onUse} onSelect={setActive} />}
